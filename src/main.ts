@@ -11,10 +11,12 @@ import {
   type WizardUpdate,
   type AttackSpell,
   type NonHealingCategory,
+  type SpellCastEvent,
+
 } from "./types";
 
 import { WizardRepository, SpellRepository } from "./repository";
-import { Log } from "./decorators";
+import { Log, Cache } from "./decorators";
 
 function isHouse(value: unknown): value is House {
   return (
@@ -75,6 +77,12 @@ class AcademyService {
     return events.filter(
       (event): event is Extract<AcademyEvent, { type: "spell-cast" }> =>
         event.type === "spell-cast"
+    );
+  }
+
+  handleSpellCast(event: SpellCastEvent): void {
+    console.log(
+      `Wizard ${event.wizardId} cast ${event.spellName}`
     );
   }
 }
@@ -178,3 +186,81 @@ const typeExamples: [
 ] | null = null;
 
 void typeExamples;
+
+
+
+
+console.log("\n--- Exercise 3: Spell Cast Event ---");
+
+academy.handleSpellCast({
+  type: "spell-cast",
+  wizardId: 1,
+  spellName: "Expelliarmus"
+});
+
+
+
+console.log("\n--- Exercise 4: Validate Spell Power ---");
+
+spells.add({
+  id: 103,
+  name: "Stupefy",
+  category: "attack",
+  power: 75
+});
+
+try {
+  spells.add({
+    id: 104,
+    name: "Invalid Spell",
+    category: "attack",
+    power: -10
+  });
+} catch (error) {
+  console.log(
+    error instanceof Error ? error.message : error
+  );
+}
+
+
+
+
+console.log("\n--- Exercise 5: Cache Decorator ---");
+
+class SpellCalculator {
+  @Cache
+  calculatePower(basePower: number, multiplier: number): number {
+    console.log("Calculating...");
+    return basePower * multiplier;
+  }
+}
+
+const calculator = new SpellCalculator();
+
+console.log(calculator.calculatePower(10, 3));
+console.log(calculator.calculatePower(10, 3));
+console.log(calculator.calculatePower(5, 2));
+
+
+
+
+console.log("\n--- Exercise 6: Type Guard ---");
+
+const validWizard: unknown = {
+  id: 10,
+  name: "Harry Potter",
+  house: "Gryffindor",
+  level: 5,
+  active: true
+};
+
+const invalidWizard: unknown = {
+  id: 11,
+  name: "Viktor",
+  house: "Durmstrang",
+  level: 5,
+  active: true
+};
+
+console.log(isWizard(validWizard));   // true
+console.log(isWizard(invalidWizard)); // false
